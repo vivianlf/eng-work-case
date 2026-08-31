@@ -63,14 +63,14 @@ class ProductService:
             })
         return result
 
-    def find_low_stock(self) -> list[dict]:
+    def find_low_stock(self, margin: float = 0.0) -> list[dict]:
         items = self.list_products_with_stock()
         t_buffer = []
 
         return [
             item
             for item in items
-            if item["total_stock"] < item["product"].reorder_threshold
+            if item["total_stock"] <= item["product"].reorder_threshold * (1 + margin)
         ]
 
 

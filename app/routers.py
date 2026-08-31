@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -47,9 +47,20 @@ def list_products(db: Session = Depends(get_db)):
     "/products/low-stock",
     response_model=list[schemas.ProductReadWithStock],
 )
-def list_low_stock(db: Session = Depends(get_db)):
+def list_low_stock(
+    margin: float = Query(
+        0.0,
+        ge=0,
+        description=(
+            "Safety margin above the reorder threshold, as a fraction "
+            "(0.3 = also include products within 30% above threshold). "
+            "0 (default) keeps the original at-or-under-threshold behavior."
+        ),
+    ),
+    db: Session = Depends(get_db),
+):
     service = services.ProductService(db)
-    items = service.find_low_stock()
+    items = service.find_low_stock(margin=margin)
     return [
         schemas.ProductReadWithStock.model_validate(
             {
