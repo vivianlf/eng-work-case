@@ -41,3 +41,34 @@ class StockMovementRead(BaseModel):
     quantity_change: int
     reason: str
     created_at: datetime
+
+class StockTransferCreate(BaseModel):
+    product_id: int
+    source_warehouse_id: int
+    destination_warehouse_id: int
+    quantity: int = Field(gt=0)
+    reason: str | None = Field(default=None, min_length=1, max_length=200)
+
+
+class StockTransferRead(BaseModel):
+    id: int
+    product_id: int
+    source_warehouse_id: int
+    destination_warehouse_id: int
+    quantity: int
+    reason: str | None
+    source_stock_movement_id: int
+    destination_stock_movement_id: int
+    source_quantity_after: int
+    destination_quantity_after: int
+    created_at: datetime
+
+
+class TransferHistoryRead(BaseModel):
+    id: int
+    product_id: int
+    source_stock_movement_id: int
+    destination_stock_movement_id: int
+    source_description: str
+    destination_description: str
+    created_at: datetime

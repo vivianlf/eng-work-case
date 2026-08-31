@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from sqlalchemy import ForeignKey, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
 
@@ -45,3 +45,26 @@ class StockMovement(Base):
     quantity_change: Mapped[int]
     reason: Mapped[str]
     created_at: Mapped[datetime]
+
+class TransferHistory(Base):
+
+    __tablename__ = "transfer_history"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    source_stock_movement_id: Mapped[int] = mapped_column(
+        ForeignKey("stock_movements.id")
+    )
+    destination_stock_movement_id: Mapped[int] = mapped_column(
+        ForeignKey("stock_movements.id")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        default=lambda: datetime.now(timezone.utc),
+    )
+
+    source_movement: Mapped["StockMovement"] = relationship(
+        foreign_keys=[source_stock_movement_id]
+    )
+    destination_movement: Mapped["StockMovement"] = relationship(
+        foreign_keys=[destination_stock_movement_id]
+    )
+

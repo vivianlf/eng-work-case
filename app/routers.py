@@ -73,3 +73,48 @@ def adjust_stock(data: schemas.StockAdjustment, db: Session = Depends(get_db)):
     if movement is None:
         return Response(status_code=200)
     return movement
+
+@router.post(
+    "/stocks/transfers",
+    response_model=schemas.StockTransferRead,
+    status_code=201,
+)
+def transfer_stock(data: schemas.StockTransferCreate, db: Session = Depends(get_db)):
+    service = services.StockService(db)
+    result = service.transfer_stock(data)
+    transfer = result["transfer"]
+    return schemas.StockTransferRead(
+        id=transfer.id,
+        product_id=result["product_id"],
+        source_warehouse_id=result["source_warehouse_id"],
+        destination_warehouse_id=result["destination_warehouse_id"],
+        quantity=result["quantity"],
+        reason=result["reason"],
+        source_stock_movement_id=transfer.source_stock_movement_id,
+        destination_stock_movement_id=transfer.destination_stock_movement_id,
+        source_quantity_after=result["source_quantity_after"],
+        destination_quantity_after=result["destination_quantity_after"],
+        created_at=transfer.created_at,
+    )
+
+
+@router.get(
+    "/stocks/transfers",
+    response_model=list[schemas.TransferHistoryRead],
+)
+def list_transfers(db: Session = Depends(get_db)):
+    service = services.StockService(db)
+    items = service.list_transfers()
+    return [
+        schemas.TransferHistoryRead(
+            id=item["transfer"].id,
+            product_id=item["product_id"],
+            source_stock_movement_id=item["transfer"].source_stock_movement_id,
+            destination_stock_movement_id=item["transfer"].destination_stock_movement_id,
+            source_description=item["source_description"],
+            destination_description=item["destination_description"],
+            created_at=item["transfer"].created_at,
+        )
+        for item in items
+    ]
+
