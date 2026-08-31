@@ -88,7 +88,7 @@ class StockService:
             self.db.add(stock_level)
 
         # quantity_change is 0: it's a no-op, nothing to record.
-        if stock_level.quantity + data.quantity_change == 0:
+        if data.quantity_change == 0:
             return None
 
         stock_level.quantity += data.quantity_change
